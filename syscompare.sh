@@ -49,15 +49,15 @@ if [ "$LDISTRO" = "$TDISTRO" ]; then
 	if [ "$LDISTRO" = "debian" ]; then
 		CMD="dpkg -l"
 	elif [ "$LDISTRO" = "rh" ]; then
-		CMD="rpm -qa|sort"
+		CMD="rpm -qa"
 	else
 		echo "Unsupported distribution. Skipping native package manager check" >> $LOGFILE
 		CMD=""
 	fi
 
-	if [ "$CMD" ]; then
-		$CMD 		       > $LPKGFILE
-		ssh $TUSER@$THOST $CMD > $TPKGFILE
+	if [ "x$CMD" != "x" ]; then
+		$CMD|sort > $LPKGFILE
+		ssh $TUSER@$THOST $CMD|sort > $TPKGFILE
 		diff $LPKGFILE $TPKGFILE &>/dev/null || echo "DIFF - package list" >> $LOGFILE
 	fi
 fi
