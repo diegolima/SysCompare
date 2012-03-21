@@ -23,10 +23,14 @@ LOGFILE=/tmp/syscompare
 # Source Host user and password
 LUSER=""
 LHOST=""
+LDISTRO="debian"
+LPKGFILE="/tmp/syscompare-pkg-local.txt"
 
 # Target Host user and password
-TUSER="diego"
-THOST="127.0.0.1"
+TUSER="lima"
+THOST="192.168.0.141"
+TDISTRO="debian"
+TPKGFILE="/tmp/syscompare-pkg-remote.txt"
 
 NSOURCE=${#SOURCE[@]}
 NTARGET=${#TARGET[@]}
@@ -38,6 +42,23 @@ fi
 
 echo "" >> $LOGFILE
 echo "START - `date +%Y%m%d%H%M%S`" >> $LOGFILE
+
+if [ "$LDISTRO" = "$TDISTRO" ]; then
+	if [ "$LDISTRO" = "debian" ]; then
+		CMD="dpkg -l"
+	elif [ "$LDISTRO" = "rh" ]; then
+		CMD="rpm -qa"
+	else
+		echo "Unsupported distribution. Skipping native package manager check" >> $LOGFILE
+		CMD=""
+	fi
+
+	if [ "$CMD" ]; then
+		$CMD 		       > $LPKGFILE
+		ssh $TUSER@$THOST $CMD > $TPKGFILE
+		diff $LPKGFILE $TPKGFILE &>/dev/null || echo "DIFF - package list" >> $LOGFILE
+	fi
+fi
 
 for((i=0;i<$NSOURCE;i++)); do
 	echo Comparing files in ${SOURCE[$i]} and ${TARGET[$i]}	
@@ -90,3 +111,7 @@ for((i=0;i<$NSOURCE;i++)); do
 done
 
 echo "FINISH - `date +%Y%m%d%H%M%S`" >> $LOGFILE
+echo "Cleaning up files..."
+tar -cvzf /tmp/syscompare-results.tar.gz $LOGFILE $LPKGFILE $TPKGFILE
+rm $LOGFILE $LPKGFILE $TPKGFILE
+echo "Cleanup done"
