@@ -6,6 +6,8 @@
 # between them. Its purpose is to help detect and troubleshoot inconsistent
 # system behaviour and help detect modified binaries and libraries.
 #
+# It also checks if the packages installed on two systems are different.
+#
 # Notes:
 # The script supports remote checking of hosts using ssh, but password auth is
 # not supported. A SSH key must be set up when using remote checking. Also,
@@ -47,7 +49,7 @@ if [ "$LDISTRO" = "$TDISTRO" ]; then
 	if [ "$LDISTRO" = "debian" ]; then
 		CMD="dpkg -l"
 	elif [ "$LDISTRO" = "rh" ]; then
-		CMD="rpm -qa"
+		CMD="rpm -qa|sort"
 	else
 		echo "Unsupported distribution. Skipping native package manager check" >> $LOGFILE
 		CMD=""
