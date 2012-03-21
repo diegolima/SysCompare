@@ -15,8 +15,8 @@
 # Author: Diego Alencar Alves de Lima <diego.lima@4linux.com.br>
 #==============================================================================
 
-SOURCE=(/usr/lib)
-TARGET=(/usr/lib)
+SOURCE=(/lib /usr /bin /sbin /var/lib)
+TARGET=(/mnt/lib /mnt/usr /mnt/bin /mnt/sbin /mnt/var/lib)
 
 LOGFILE=/tmp/syscompare
 
@@ -50,6 +50,7 @@ for((i=0;i<$NSOURCE;i++)); do
 		else
 			lcmd=""
 		fi
+		#TODO: Remote sync using SSH is very expensive. Redesign this using a single connection.
 		if [ "`echo ${TARGET[$i]}|cut -c-3`" = "SSH" ]; then
 			echo "Remote target: $file"
 			tcmd="ssh $TUSER@$THOST"
